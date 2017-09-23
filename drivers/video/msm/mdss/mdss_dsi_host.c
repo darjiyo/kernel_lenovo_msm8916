@@ -963,7 +963,7 @@ void mdss_dsi_cmd_bta_sw_trigger(struct mdss_panel_data *pdata)
 }
 
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl, int i)
 #else
 static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
@@ -972,7 +972,7 @@ static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
 	struct dcs_cmd_req cmdreq;
 
 	memset(&cmdreq, 0, sizeof(cmdreq));
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	cmdreq.cmds = ctrl->status_cmds[i].cmds;
 	cmdreq.cmds_cnt = ctrl->status_cmds[i].cmd_cnt;
 #else
@@ -1001,7 +1001,7 @@ static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
 int mdss_dsi_reg_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 {
 	int ret = 0;
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	int i,j;
 	u32 value;
 #endif
@@ -1012,7 +1012,7 @@ int mdss_dsi_reg_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 	}
 
 	pr_debug("%s: Checking Register status\n", __func__);
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	for(i=0;i<ctrl_pdata->status_cmds_num;i++)
 	{
 		value = 0;
@@ -1078,7 +1078,7 @@ int mdss_dsi_reg_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 		pr_err("%s: Read status register returned error\n", __func__);
 	}
 #endif
-#ifndef CONFIG_MACH_WT86518
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 	mdss_dsi_clk_ctrl(ctrl_pdata, DSI_ALL_CLKS, 0);
 #endif
 	pr_debug("%s: Read register done with ret: %d\n", __func__, ret);
@@ -1542,7 +1542,7 @@ static struct dsi_cmd_desc pkt_size_cmd = {
  * 3rd read: 14 bytes payload + 2 crc
  *
  */
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 extern int Packet_PLAG;
 #endif
 int mdss_dsi_cmds_rx(struct mdss_dsi_ctrl_pdata *ctrl,
@@ -1614,8 +1614,9 @@ do_send:
 	while (!end) {
 		pr_debug("%s:  rlen=%d pkt_size=%d rx_byte=%d\n",
 				__func__, rlen, pkt_size, rx_byte);
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		if(Packet_PLAG==0){
+#ifdef CONFIG_MACH_WT86518
 			max_pktsize[0] = pkt_size;
 			mdss_dsi_buf_init(tp);
 			ret = mdss_dsi_cmd_dma_add(tp, &pkt_size_cmd);
@@ -1672,9 +1673,16 @@ do_send:
 			rp->read_cnt = 0;
 			goto end;
 		}
+#ifdef CONFIG_MACH_WT86528
+		Packet_PLAG = 1;
+#endif
 		pr_debug("%s: max_pkt_size=%d sent\n",
 					__func__, pkt_size);
+#ifdef CONFIG_MACH_WT86528
+		}
 #endif
+#endif /* CONFIG_MACH_WT86518 */
+#endif /* CONFIG_MACH_LENOVO_MSM8916 */
 		mdss_dsi_buf_init(tp);
 		ret = mdss_dsi_cmd_dma_add(tp, cmds);
 		if (!ret) {

@@ -124,7 +124,7 @@ enum dsi_pm_type {
 	DSI_MAX_PM
 };
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 #define STATUS_CMDS_NUM 5
 #define STATUS_VALUE_NUM 5
 #endif
@@ -380,7 +380,7 @@ struct mdss_dsi_ctrl_pdata {
 	struct dsi_panel_cmds post_panel_on_cmds;
 	struct dsi_panel_cmds off_cmds;
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	struct dsi_panel_cmds status_cmds[STATUS_CMDS_NUM];
 	int status_cmds_num;
 #else
@@ -388,7 +388,7 @@ struct mdss_dsi_ctrl_pdata {
 #endif
 	u32 status_cmds_rlen;
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	u32 status_value[STATUS_CMDS_NUM][STATUS_VALUE_NUM];
 #else
 	u32 status_value;

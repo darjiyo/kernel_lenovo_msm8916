@@ -23,11 +23,6 @@
 #include <linux/err.h>
 
 #include "mdss_dsi.h"
-
-#ifdef CONFIG_MACH_WT86518
-#include <linux/hardware_info.h>
-#endif
-
 #include "mdss_livedisplay.h"
 
 #define DT_CMD_HDR 6
@@ -43,7 +38,7 @@
 
 DEFINE_LED_TRIGGER(bl_led_trigger);
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 extern bool is_Lcm_Present;
 #endif
 
@@ -58,7 +53,7 @@ void mdss_dsi_panel_pwm_cfg(struct mdss_dsi_ctrl_pdata *ctrl)
 				__func__, ctrl->pwm_lpg_chan);
 	}
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	ctrl->pwm_enabled = 1;
 #else
 	ctrl->pwm_enabled = 0;
@@ -709,7 +704,7 @@ end:
 	return 0;
 }
 
-#ifndef CONFIG_MACH_WT86518
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 static int mdss_dsi_panel_low_power_config(struct mdss_panel_data *pdata,
 	int enable)
 {
@@ -737,7 +732,7 @@ static int mdss_dsi_panel_low_power_config(struct mdss_panel_data *pdata,
 	pr_debug("%s:-\n", __func__);
 	return 0;
 }
-// We dont need this on a6000 (SOT LAGANI HAI!)
+// We dont need this on a6000/a6010 (SOT LAGANI HAI!)
 #endif
 
 static void mdss_dsi_parse_lane_swap(struct device_node *np, char *dlane_swap)
@@ -1070,7 +1065,7 @@ static int mdss_dsi_parse_reset_seq(struct device_node *np,
 	return 0;
 }
 
-#ifndef CONFIG_MACH_WT86518
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 static int mdss_dsi_gen_read_status(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 {
 	if (ctrl_pdata->status_buf.data[0] !=
@@ -1487,7 +1482,7 @@ static void mdss_dsi_set_lane_clamp_mask(struct mipi_panel_info *mipi)
 	mipi->phy_lane_clamp_mask = mask;
 }
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 void mdss_dsi_parse_status_command(struct device_node *np, struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 {
 	int i=0;
@@ -1865,7 +1860,7 @@ static int mdss_panel_parse_dt(struct device_node *np,
 	mdss_dsi_parse_dcs_cmds(np, &ctrl_pdata->off_cmds,
 		"qcom,mdss-dsi-off-command", "qcom,mdss-dsi-off-command-state");
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 
 	rc = of_property_read_u32(np, "qcom,mdss-dsi-panel-status-command-num", &tmp);
 	ctrl_pdata->status_cmds_num = (!rc ? tmp : 0);
@@ -1894,7 +1889,7 @@ static int mdss_panel_parse_dt(struct device_node *np,
 			ctrl_pdata->status_mode = ESD_BTA;
 		} else if (!strcmp(data, "reg_read")) {
 			ctrl_pdata->status_mode = ESD_REG;
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 			ctrl_pdata->status_cmds_rlen = 4;
 #else
 			ctrl_pdata->status_cmds_rlen = 1;
@@ -1905,7 +1900,7 @@ static int mdss_panel_parse_dt(struct device_node *np,
 			ctrl_pdata->status_mode = ESD_REG_NT35596;
 			ctrl_pdata->status_error_count = 0;
 			ctrl_pdata->status_cmds_rlen = 8;
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		} else if (!strcmp(data, "te_signal_check")) {
 #else
 			ctrl_pdata->check_read_status =
@@ -1943,7 +1938,7 @@ error:
 	return -EINVAL;
 }
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 #ifdef LCM_SUPPORT_READ_VERSION
 static int mdss_panel_parse_panel_name(struct device_node *node)
 {
@@ -1990,10 +1985,6 @@ static int msm_lcd_name_create_sysfs(void)
 #endif
 #endif
 
-#ifdef CONFIG_MACH_WT86518
-extern char Lcm_name[HARDWARE_MAX_ITEM_LONGTH];
-#endif
-
 int mdss_dsi_panel_init(struct device_node *node,
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata,
 	bool cmd_cfg_cont_splash)
@@ -2018,13 +2009,9 @@ int mdss_dsi_panel_init(struct device_node *node,
 	} else {
 		pr_info("%s: Panel Name = %s\n", __func__, panel_name);
 		strlcpy(&pinfo->panel_name[0], panel_name, MDSS_MAX_PANEL_LEN);
-
-#ifdef CONFIG_MACH_WT86518
-		strcpy(Lcm_name,panel_name);
-#endif
 	}
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 #ifdef LCM_SUPPORT_READ_VERSION
 		rc = mdss_panel_parse_panel_name(node);
 		if (rc) {
@@ -2053,10 +2040,10 @@ int mdss_dsi_panel_init(struct device_node *node,
 	ctrl_pdata->on = mdss_dsi_panel_on;
 	ctrl_pdata->post_panel_on = mdss_dsi_post_panel_on;
 	ctrl_pdata->off = mdss_dsi_panel_off;
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	if(is_Lcm_Present)
 	{
-	ctrl_pdata->panel_data.set_backlight = mdss_dsi_panel_bl_ctrl;
+		ctrl_pdata->panel_data.set_backlight = mdss_dsi_panel_bl_ctrl;
 	}
 #else
 	ctrl_pdata->low_power_config = mdss_dsi_panel_low_power_config;

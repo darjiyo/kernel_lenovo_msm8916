@@ -191,7 +191,7 @@ u32 mdss_mdp_calc_latency_buf_bytes(bool is_bwc,
 		latency_buf_bytes = src_w * bpp *
 			latency_lines;
 	} else {
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		latency_lines = 3;
 #else
 		latency_lines = 2;

@@ -2064,7 +2064,7 @@ static void mdss_mdp_overlay_pan_display(struct msm_fb_data_type *mfd)
 		       offset, fbi->fix.smem_len);
 		goto pan_display_error;
 	}
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	//+BUG,mahao.wt,MOD,2015.6.17,Resolve blue screen flicker in poweroff charging mode
 	 ret = mdss_mdp_overlay_get_fb_pipe(mfd, &pipe, MDSS_MDP_MIXER_MUX_LEFT);
 	//-BUG,mahao.wt,MOD,2015.6.17,Resolve blue screen flicker in poweroff charging mode
