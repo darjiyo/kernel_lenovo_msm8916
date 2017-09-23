@@ -31,7 +31,7 @@
 #include "wcd-mbhc-v2.h"
 #include "wcdcal-hwdep.h"
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 #include "msm8x16_wcd_registers.h"
 #include "msm8x16-wcd.h"
 #endif
@@ -506,7 +506,7 @@ static bool wcd_mbhc_is_hph_pa_on(struct wcd_mbhc *mbhc)
 static void wcd_mbhc_set_and_turnoff_hph_padac(struct wcd_mbhc *mbhc)
 {
 	u8 wg_time;
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	u8 state = 0;
 #endif
 
@@ -523,7 +523,7 @@ static void wcd_mbhc_set_and_turnoff_hph_padac(struct wcd_mbhc *mbhc)
 		pr_debug("%s PA is off\n", __func__);
 	}
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	state = gpio_get_value(EXT_SPK_AMP_GPIO);
 	pr_debug("%s external audio pa state:%d\n", __func__,state);
 	if (!state)
@@ -594,7 +594,7 @@ static void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 		wcd_mbhc_jack_report(mbhc, &mbhc->headset_jack,
 				mbhc->hph_status, WCD_MBHC_JACK_MASK);
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		msm8x16_wcd_codec_set_headset_state(mbhc->hph_status);
 #endif
 
@@ -708,7 +708,7 @@ static void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 				    WCD_MBHC_JACK_MASK);
 		wcd_mbhc_clr_and_turnon_hph_padac(mbhc);
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		msm8x16_wcd_codec_set_headset_state(mbhc->hph_status);
 #endif
 	}

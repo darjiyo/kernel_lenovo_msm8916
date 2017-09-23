@@ -45,7 +45,7 @@
 #include "msm8916-wcd-irq.h"
 #include "msm8x16_wcd_registers.h"
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 #include <linux/switch.h>
 #endif
 
@@ -136,7 +136,7 @@ static const DECLARE_TLV_DB_SCALE(digital_gain, 0, 1, 0);
 static const DECLARE_TLV_DB_SCALE(analog_gain, 0, 25, 1);
 static struct snd_soc_dai_driver msm8x16_wcd_i2s_dai[];
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 static struct switch_dev accdet_data;
 static int accdet_state = 0;
 static struct delayed_work analog_switch_enable;
@@ -1004,6 +1004,7 @@ static const struct wcd_mbhc_cb mbhc_cb = {
 static const uint32_t wcd_imped_val[] = {4, 8, 12, 16,
 					20, 24, 28, 32,
 					36, 40, 44, 48};
+
 
 void msm8x16_notifier_call(struct snd_soc_codec *codec,
 				  const enum wcd_notify_event event)
@@ -4042,17 +4043,34 @@ static int msm8x16_wcd_hphr_dac_event(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 static void msm8x16_analog_switch_delayed_enable(struct work_struct *work)
 {
 	int state = 0;
 
 	state = gpio_get_value(EXT_SPK_AMP_GPIO);
+#ifdef CONFIG_MACH_WT86528
+	state = gpio_get_value(EXT_SPK_AMP_GPIO_1);
+#endif
 	pr_debug("%s: Enable analog switch,external PA state:%d\n", __func__,state);
 
 	if(!state)
 		gpio_direction_output(EXT_SPK_AMP_HEADSET_GPIO, true);
 }
+
+#ifdef CONFIG_MACH_WT86528
+void msm8x16_wcd_codec_set_headset_state(u32 state)
+{
+	switch_set_state((struct switch_dev *)&accdet_data, state);
+	accdet_state = state;
+}
+
+int msm8x16_wcd_codec_get_headset_state(void)
+{
+	pr_debug("%s accdet_state = %d\n", __func__, accdet_state);
+	return accdet_state;
+}
+#endif
 
 static void enable_ldo17(int enable)
 {
@@ -4106,7 +4124,7 @@ static int msm8x16_wcd_hph_pa_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_codec *codec = w->codec;
 	struct msm8x16_wcd_priv *msm8x16_wcd = snd_soc_codec_get_drvdata(codec);
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	int state = 0;
 #endif
 
@@ -4126,10 +4144,12 @@ static int msm8x16_wcd_hph_pa_event(struct snd_soc_dapm_widget *w,
 
 	case SND_SOC_DAPM_POST_PMU:
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		enable_ldo17(1);
 		state = msm8x16_wcd_codec_get_headset_state();
+#ifndef CONFIG_MACH_WT86528
 		usleep_range(4000, 4100);
+#endif
 #else
 		usleep_range(7000, 7100);
 #endif
@@ -4146,7 +4166,7 @@ static int msm8x16_wcd_hph_pa_event(struct snd_soc_dapm_widget *w,
 				MSM8X16_WCD_A_CDC_RX2_B6_CTL, 0x01, 0x00);
 		}
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		usleep_range(10000, 10100);
 		if(!state)
 			gpio_direction_output(EXT_SPK_AMP_HEADSET_GPIO, false);
@@ -4203,7 +4223,7 @@ static int msm8x16_wcd_hph_pa_event(struct snd_soc_dapm_widget *w,
 			w->name);
 		usleep_range(10000, 10100);
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 		gpio_direction_output(EXT_SPK_AMP_HEADSET_GPIO, false);
 		enable_ldo17(0);
 #endif
@@ -5568,7 +5588,7 @@ static int msm8x16_wcd_codec_probe(struct snd_soc_codec *codec)
 	wcd_mbhc_init(&msm8x16_wcd_priv->mbhc, codec, &mbhc_cb, &intr_ids,
 		      wcd_mbhc_registers, true);
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	accdet_data.name = "h2w";
 	accdet_data.index = 0;
 	accdet_data.state = 0;
@@ -5603,7 +5623,7 @@ static int msm8x16_wcd_codec_probe(struct snd_soc_codec *codec)
 		return -ENOMEM;
 	}
 
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 	INIT_DELAYED_WORK(&analog_switch_enable, msm8x16_analog_switch_delayed_enable);
 #endif
 
