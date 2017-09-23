@@ -1502,10 +1502,11 @@ static int akm_compass_suspend(struct device *dev)
 	akm->state.power_on = akm->power_enabled;
 	if (akm->state.power_on)
 		akm_compass_power_set(akm, false);
-
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 	ret = pinctrl_select_state(akm->pinctrl, akm->pin_sleep);
 	if (ret)
 		dev_err(dev, "Can't select pinctrl state\n");
+#endif
 
 	dev_dbg(&akm->i2c->dev, "suspended\n");
 
@@ -1517,10 +1518,11 @@ static int akm_compass_resume(struct device *dev)
 	struct akm_compass_data *akm = dev_get_drvdata(dev);
 	int ret = 0;
 	uint8_t mode;
-
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 	ret = pinctrl_select_state(akm->pinctrl, akm->pin_default);
 	if (ret)
 		dev_err(dev, "Can't select pinctrl state\n");
+#endif
 
 	if (akm->state.power_on) {
 		ret = akm_compass_power_set(akm, true);
@@ -1740,12 +1742,13 @@ static int akm_compass_parse_dt(struct device *dev,
 	akm->use_hrtimer = of_property_read_bool(np, "akm,use-hrtimer");
 	akm->gpio_rstn = of_get_named_gpio_flags(dev->of_node,
 			"akm,gpio_rstn", 0, NULL);
-
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 	if (!gpio_is_valid(akm->gpio_rstn)) {
 		dev_err(dev, "gpio reset pin %d is invalid.\n",
 			akm->gpio_rstn);
 		return -EINVAL;
 	}
+#endif
 
 	return 0;
 }
@@ -1757,6 +1760,7 @@ static int akm_compass_parse_dt(struct device *dev,
 }
 #endif /* !CONFIG_OF */
 
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 static int akm_pinctrl_init(struct akm_compass_data *akm)
 {
 	struct i2c_client *client = akm->i2c;
@@ -1781,6 +1785,7 @@ static int akm_pinctrl_init(struct akm_compass_data *akm)
 
 	return 0;
 }
+#endif
 
 static int akm_report_data(struct akm_compass_data *akm)
 {
@@ -2183,7 +2188,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	s_akm->i2c = client;
 	/* set client data */
 	i2c_set_clientdata(client, s_akm);
-
+#ifndef CONFIG_MACH_LENOVO_MSM8916
 	/* initialize pinctrl */
 	if (!akm_pinctrl_init(s_akm)) {
 		err = pinctrl_select_state(s_akm->pinctrl, s_akm->pin_default);
@@ -2192,6 +2197,7 @@ int akm_compass_probe(struct i2c_client *client, const struct i2c_device_id *id)
 			goto exit2;
 		}
 	}
+#endif
 
 	/* Pull up the reset pin */
 	AKECS_Reset(s_akm, 1);
