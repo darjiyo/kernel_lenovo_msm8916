@@ -259,7 +259,7 @@ int qpnp_pon_set_restart_reason(enum pon_restart_reason reason)
 		return 0;
 
 	rc = qpnp_pon_masked_write(pon, QPNP_PON_SOFT_RB_SPARE(pon->base),
-#ifdef CONFIG_MACH_WT86518
+#ifdef CONFIG_MACH_LENOVO_MSM8916
 					PON_MASK(7, 5), (reason << 5));
 #else
 					PON_MASK(7, 2), (reason << 2));
@@ -1477,6 +1477,9 @@ static void qpnp_pon_debugfs_remove(struct spmi_device *spmi)
 {}
 #endif
 
+#ifdef CONFIG_MACH_WT86528 
+bool PwrKeyBoot = false;
+#endif
 static int qpnp_pon_probe(struct spmi_device *spmi)
 {
 	struct qpnp_pon *pon;
@@ -1546,6 +1549,14 @@ static int qpnp_pon_probe(struct spmi_device *spmi)
 	boot_reason = ffs(pon_sts);
 
 	index = ffs(pon_sts) - 1;
+
+#ifdef CONFIG_MACH_WT86528	
+	if (index != 4) {
+		printk(KERN_WARNING  "~PON:%s\n",qpnp_pon_reason[index]);
+		PwrKeyBoot = true;
+	}
+#endif
+
 	cold_boot = !qpnp_pon_is_warm_reset();
 	if (index >= ARRAY_SIZE(qpnp_pon_reason) || index < 0) {
 		dev_info(&pon->spmi->dev,
