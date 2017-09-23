@@ -21,4 +21,10 @@ config MACH_WT86518
 	help
 	  Support for Lenovo A6000(s) variant
 
+config MACH_WT86528
+	bool "WT86528 board"
+	select MACH_LENOVO_MSM8916
+	help
+	  Support for Lenovo K31/A6010 variant
+
 endmenu
