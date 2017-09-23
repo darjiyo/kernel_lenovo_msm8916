@@ -125,6 +125,12 @@ static struct power_supply *psy;
 
 static bool aca_id_turned_on;
 static bool legacy_power_supply;
+
+#ifdef CONFIG_MACH_WT86528
+extern  bool IsUsbPlugIn,IsTAPlugIn,TurnOnChg,OTGturnOn,VbusValid;
+extern struct work_struct chg_fast_work;
+#endif
+
 static inline bool aca_enabled(void)
 {
 #ifdef CONFIG_USB_MSM_ACA
@@ -1264,7 +1270,10 @@ static irqreturn_t msm_otg_phy_irq_handler(int irq, void *data)
 		pr_debug("PHY ID IRQ outside LPM\n");
 		msm_id_status_w(&motg->id_status_work.work);
 	}
-
+#ifdef CONFIG_MACH_WT86528   
+	printk(KERN_WARNING   "~OTG IRQ \n");
+	OTGturnOn = true;
+#endif
 	return IRQ_HANDLED;
 }
 
@@ -1996,8 +2005,15 @@ static int msm_otg_set_power(struct usb_phy *phy, unsigned mA)
 	 * states when CDP/ACA is connected.
 	 */
 	if (motg->chg_type == USB_SDP_CHARGER)
+#ifdef CONFIG_MACH_WT86528
+		{
+			if(VbusValid && (mA == 0 || mA == 2))
+				mA = 10;
+#endif	   
 		msm_otg_notify_charger(motg, mA);
-
+#ifdef CONFIG_MACH_WT86528
+		}
+#endif
 	return 0;
 }
 
@@ -3285,6 +3301,21 @@ static void msm_otg_sm_work(struct work_struct *w)
 				msm_chg_detect_work(&motg->chg_work.work);
 				break;
 			case USB_CHG_STATE_DETECTED:
+#ifdef CONFIG_MACH_WT86528
+				if((motg->chg_type == USB_DCP_CHARGER) && (!OTGturnOn)) {
+					printk(KERN_WARNING   "~TA Plug In.  \n");
+					IsTAPlugIn = true;
+					IsUsbPlugIn = false;
+					TurnOnChg=true;		  
+					schedule_work(&chg_fast_work);
+				} else if((motg->chg_type == USB_SDP_CHARGER) && (!OTGturnOn)) {
+					printk(KERN_WARNING   "~USB Plug In.  \n");
+					IsUsbPlugIn = true;
+					IsTAPlugIn=false;
+					TurnOnChg=true;
+					schedule_work(&chg_fast_work);
+				}
+#endif
 				switch (motg->chg_type) {
 				case USB_DCP_CHARGER:
 					/* fall through */
